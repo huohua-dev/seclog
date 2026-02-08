@@ -1,0 +1,143 @@
+# seclog - Built-in Security Detection Rules
+# 
+# Format: YAML list of rule definitions
+# 
+# Fields:
+#   name: Unique rule identifier
+#   description: Human-readable description
+#   severity: critical | high | medium | low
+#   type: single | aggregate
+#   pattern: Regex pattern (for single type)
+#   field: Field to match against (default: raw_message)
+#   threshold: Count threshold (for aggregate type)
+#   timewindow: Time window in minutes (for aggregate type)
+
+- name: ssh_brute_force
+  description: SSH brute force attack detected (5+ failed attempts in 5 minutes)
+  severity: critical
+  type: aggregate
+  pattern: "Failed password for.*from"
+  threshold: 5
+  timewindow: 5
+
+- name: sql_injection_union_select
+  description: SQL injection attempt (UNION SELECT)
+  severity: critical
+  type: single
+  pattern: "(?i)union\\s+(?:all\\s+)?select"
+  field: path
+
+- name: sql_injection_or_1_equals_1
+  description: SQL injection attempt (OR 1=1)
+  severity: critical
+  type: single
+  pattern: "(?i)or\\s+1\\s*=\\s*1"
+  field: path
+
+- name: sql_injection_drop_table
+  description: SQL injection attempt (DROP TABLE)
+  severity: critical
+  type: single
+  pattern: "(?i)drop\\s+table"
+  field: path
+
+- name: directory_traversal
+  description: Directory traversal attempt (../ pattern)
+  severity: high
+  type: single
+  pattern: "\\.\\./"
+
+- name: http_403_aggregation
+  description: Multiple 403 Forbidden responses from same IP
+  severity: medium
+  type: aggregate
+  pattern: "403"
+  field: status
+  threshold: 10
+  timewindow: 1
+
+- name: http_404_aggregation
+  description: Multiple 404 Not Found responses from same IP
+  severity: medium
+  type: aggregate
+  pattern: "404"
+  field: status
+  threshold: 20
+  timewindow: 1
+
+- name: suspicious_useragent_sqlmap
+  description: sqlmap scanner User-Agent detected
+  severity: critical
+  type: single
+  pattern: "(?i)sqlmap"
+  field: user_agent
+
+- name: suspicious_useragent_nikto
+  description: nikto scanner User-Agent detected
+  severity: high
+  type: single
+  pattern: "(?i)nikto"
+  field: user_agent
+
+- name: suspicious_useragent_nmap
+  description: nmap scanner User-Agent detected
+  severity: medium
+  type: single
+  pattern: "(?i)nmap"
+  field: user_agent
+
+- name: command_injection
+  description: Command injection attempt (shell metacharacters)
+  severity: critical
+  type: single
+  pattern: "[;&|\\n]\\s*(?:cat|ls|wget|curl|nc|bash|sh)"
+  field: path
+
+- name: large_file_upload
+  description: Abnormally large POST request (potential DoS)
+  severity: medium
+  type: single
+  pattern: ".{10000000}"
+  field: raw_message
+
+- name: sensitive_path_admin
+  description: Access to admin panel
+  severity: medium
+  type: single
+  pattern: "/admin(?:/|$)"
+
+- name: sensitive_path_wp_login
+  description: WordPress login page access
+  severity: high
+  type: single
+  pattern: "/wp-login\\.php"
+
+- name: sensitive_path_env
+  description: Access to .env configuration file
+  severity: critical
+  type: single
+  pattern: "/\\.env"
+
+- name: sensitive_path_api_debug
+  description: Access to API debug endpoint
+  severity: high
+  type: single
+  pattern: "/api/debug"
+
+- name: off_hours_activity
+  description: Activity during non-working hours (02:00-05:00)
+  severity: low
+  type: single
+  pattern: ".*"
+
+- name: xss_script_tag
+  description: XSS attempt (<script> tag)
+  severity: high
+  type: single
+  pattern: "<script"
+
+- name: xss_javascript_uri
+  description: XSS attempt (javascript: URI)
+  severity: high
+  type: single
+  pattern: "javascript:"
