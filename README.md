@@ -14,7 +14,6 @@
 ## 安装
 
 ```bash
-cd projects/seclog
 pip install -e .
 ```
 

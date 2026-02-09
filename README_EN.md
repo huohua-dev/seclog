@@ -14,7 +14,6 @@ A lightweight, privacy-focused security log analysis tool for detecting security
 ## Installation
 
 ```bash
-cd projects/seclog
 pip install -e .
 ```
 
