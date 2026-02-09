@@ -80,3 +80,7 @@ seclog/
 ## 许可证
 
 MIT
+
+---
+
+**English Documentation**: [README_EN.md](README_EN.md)
