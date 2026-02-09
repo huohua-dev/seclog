@@ -19,50 +19,120 @@ pip install -e .
 
 ## Usage
 
-### Scan Logs
+### 1. Generate Sample Data
+
+```bash
+# Generate 100 Apache-style log samples
+seclog generate-sample --format apache --count 100
+
+# Output to file
+seclog generate-sample --format apache --count 100 -o sample.log
+```
+
+**Sample Output:**
+```
+185.220.101.35 - - [09/Feb/2026:12:03:00 +0800] "POST /wp-login.php HTTP/1.1" 500 2399
+192.168.1.101 - - [09/Feb/2026:19:11:00 +0800] "GET /blog/post-1 HTTP/1.1" 302 5881
+185.220.101.35 - - [09/Feb/2026:02:17:00 +0800] "GET /js/app.js HTTP/1.1" 301 5090
+203.0.113.45 - - [09/Feb/2026:22:06:00 +0800] "GET /api/search HTTP/1.1" 204 9775
+...
+```
+
+### 2. Scan Logs
 
 ```bash
 # Basic scan
-seclog scan <logfile>
+seclog scan sample.log
 
-# Filter by severity
-seclog scan <logfile> --severity high
-
-# Export Markdown report
-seclog scan <logfile> --format markdown -o report.md
+# Filter by severity (critical/high/medium/low)
+seclog scan sample.log --severity high
 ```
 
-### Parse Logs
+**Sample Output:**
+```
+============================================================
+  SECURITY LOG ANALYSIS REPORT
+============================================================
 
-```bash
-seclog parse <logfile> --output parsed.json
+SUMMARY
+----------------------------------------
+Total Logs Processed: 100
+Total Alerts: 120
+
+ALERTS BY SEVERITY
+----------------------------------------
+CRITICAL   | 73    ██████████████████████████████████████████████████
+HIGH       | 9     ████████
+MEDIUM     | 38    ██████████████████████████
+
+TOP ATTACKING SOURCE IPs
+----------------------------------------
+ 1. 185.220.101.35       |    30 alerts
+ 2. 192.0.2.8            |    22 alerts
+ 3. 198.51.100.12        |    20 alerts
 ```
 
-### Rule Management
+### 3. Parse Logs
 
 ```bash
-# List built-in rules
+# Parse and output as JSON
+seclog parse sample.log --output parsed.json
+```
+
+**Sample Output:**
+```json
+[
+  {
+    "timestamp": "2026-02-09T10:57:05.822110",
+    "source_ip": "192.168.1.100",
+    "action": "GET",
+    "severity": "info",
+    "path": "/about",
+    "status": 204,
+    "user_agent": "Mozilla/5.0..."
+  }
+]
+```
+
+### 4. Rule Management
+
+```bash
+# List all built-in rules
 seclog rules list
-
-# Validate custom rules
-seclog rules validate <rules.yaml>
 ```
 
-### Generate Reports
+**Sample Output:**
+```
+Loaded Rules:
+------------------------------------------------------------
+
+Name: ssh_brute_force
+  Description: SSH brute force attack detected
+  Severity: critical
+  Type: aggregate
+  Pattern: Failed password for.*from
+  Threshold: 5 in 5 minutes
+
+Name: sql_injection_union_select
+  Description: SQL injection attempt (UNION SELECT)
+  Severity: critical
+  Type: single
+  Pattern: (?i)union\s+(?:all\s+)?select
+```
+
+### 5. Generate Markdown Report
 
 ```bash
-seclog report <logfile> --output report.md
+seclog report sample.log --output report.md
 ```
 
-### Generate Sample Data
-
-```bash
-# Generate 1000 Apache-style logs
-seclog generate-sample --format apache --count 1000
-
-# Output to file
-seclog generate-sample --format syslog --count 500 -o sample.log
-```
+**Report Contents:**
+- Total logs processed, alert count statistics
+- Distribution by severity level
+- Top 10 attacking source IPs
+- Alert time distribution (ASCII bar chart)
+- Rule hit statistics
+- Detailed alert list
 
 ## Built-in Detection Rules
 
@@ -120,4 +190,4 @@ MIT
 
 ---
 
-**中文版文档**: [README_CN.md](README_CN.md)
+**中文文档**: [README_CN.md](README_CN.md)
